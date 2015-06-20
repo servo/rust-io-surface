@@ -10,7 +10,7 @@
 #![crate_name = "io_surface"]
 #![crate_type = "rlib"]
 
-#![feature(core)]
+#![feature(slice_bytes)]
 
 extern crate libc;
 extern crate core_foundation;
