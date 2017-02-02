@@ -22,7 +22,7 @@ use core_foundation::base::{CFRelease, CFRetain, CFTypeID, CFTypeRef, TCFType};
 use core_foundation::dictionary::{CFDictionary, CFDictionaryRef};
 use core_foundation::string::CFStringRef;
 use cgl::{kCGLNoError, CGLGetCurrentContext, CGLTexImageIOSurface2D, CGLErrorString};
-use gleam::gl::{BGRA, GLenum, RGBA, TEXTURE_RECTANGLE_ARB, UNSIGNED_INT_8_8_8_8_REV};
+use gleam::gl::{GLenum, TEXTURE_RECTANGLE_ARB};
 use libc::{c_int, c_void, size_t};
 use leaky_cow::LeakyCow;
 use std::mem;
@@ -120,16 +120,25 @@ impl IOSurface {
     }
 
     /// Binds to the current GL texture.
-    pub fn bind_to_gl_texture(&self, width: i32, height: i32) {
+    ///
+    /// `internal_format`, `format`, and `gl_type` (corresponding to the `internalFormat`,
+    /// `format`, and `type` parameters on `glTexImage2D` respectively) must be one of the
+    /// supported combinations in the `<OpenGL/CGLIOSurface.h>` header in `OpenGL.framework`.
+    pub fn bind_to_gl_texture(&self,
+                              width: i32,
+                              height: i32,
+                              internal_format: GLenum,
+                              format: GLenum,
+                              gl_type: GLenum) {
         unsafe {
             let context = CGLGetCurrentContext();
             let gl_error = CGLTexImageIOSurface2D(context,
                                                   TEXTURE_RECTANGLE_ARB,
-                                                  RGBA as GLenum,
+                                                  internal_format,
                                                   width,
                                                   height,
-                                                  BGRA as GLenum,
-                                                  UNSIGNED_INT_8_8_8_8_REV,
+                                                  format,
+                                                  gl_type,
                                                   mem::transmute(self.as_concrete_TypeRef()),
                                                   0);
 
